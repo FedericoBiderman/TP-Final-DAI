@@ -11,7 +11,7 @@ const ProfileScreen = () => {
   // Función para obtener los datos del usuario desde la API
   const fetchUserProfile = async () => {
     try {
-      const response = await fetch('https://properly-definite-mastodon.ngrok-free.app'); // Reemplaza con tu API real
+      const response = await fetch('https://welcome-chamois-aware.ngrok-free.app'); // Reemplaza con tu API real
       const data = await response.json();
       setUser(data); // Guardamos los datos del usuario en el estado
       setLoading(false); // Indicamos que la carga ha terminado

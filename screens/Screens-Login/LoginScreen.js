@@ -7,7 +7,7 @@ const LoginScreen = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const navigation = useNavigation();
-  const baseUrl = 'https://properly-definite-mastodon.ngrok-free.app'; 
+  const baseUrl = 'https://welcome-chamois-aware.ngrok-free.app'; 
 
   const handleLogin = async () => {
     try {

@@ -1,39 +1,44 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import axios from 'axios';
+import React, { useState, useEffect } from "react";
+import {View,Text,ScrollView,TouchableOpacity,StyleSheet,ActivityIndicator} from "react-native";
+import { useNavigation } from "@react-navigation/native";
 
-const EventsScreen = () => {
-  const [events, setEvents] = useState([]);
+import axios from "axios";
+
+const EventosScreen = () => {
+  const [eventos, setEventos] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigation = useNavigation();
-  const baseUrl = 'https://properly-definite-mastodon.ngrok-free.app'; // Reemplaza con tu base URL
+  const baseUrl = "https://welcome-chamois-aware.ngrok-free.app"; // Reemplaza con tu base URL
 
-  // Función para obtener eventos desde la API
-  const fetchEvents = async () => {
+  const fetchEventos = async () => {
     try {
       const response = await axios.get(`${baseUrl}/api/event`);
-      setEvents(response.data); // Asignamos los datos de los eventos al estado
-      setLoading(false); // Detenemos el estado de carga
+      console.log("Datos recibidos:", response.data.events.length); // Para depuración
+      setEventos(response.data.events); // Asumimos que los eventos están en response.data.events
+      setLoading(false);
     } catch (error) {
-      console.error('Error al obtener los eventos:', error);
+      console.error("Error al obtener los eventos:", error);
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchEvents(); // Llamamos a la función cuando se monta el componente
+    fetchEventos();
   }, []);
 
-  // Función para renderizar cada item (evento) en la lista
-  const renderItem = ({ item }) => (
+  const renderEventItem = (item) => (
     <TouchableOpacity
+      key={item.id}
       style={styles.eventContainer}
-      onPress={() => navigation.navigate('DetalleEventosScreen', { eventId: item.id })}
+      onPress={() =>
+        navigation.navigate("DetalleEventosScreen", { eventId: item.id })
+      }
     >
       <Text style={styles.eventName}>{item.name}</Text>
-      <Text style={styles.eventCategory}>Categoría: {item.category}</Text>
       <Text style={styles.eventDescription}>{item.description}</Text>
+      <Text style={styles.eventDetails}>
+        Fecha: {new Date(item.start_date).toLocaleDateString()}
+      </Text>
     </TouchableOpacity>
   );
 
@@ -47,11 +52,14 @@ const EventsScreen = () => {
 
   return (
     <View style={styles.container}>
-      <FlatList
-        data={events}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id.toString()}
-      />
+      <Text style={styles.header}>EVENTOS</Text>
+      <ScrollView contentContainerStyle={styles.listContainer}>
+        {eventos.length > 0 ? (
+          eventos.map(renderEventItem)
+        ) : (
+          <Text style={styles.noEventsText}>No hay eventos disponibles</Text>
+        )}
+      </ScrollView>
     </View>
   );
 };
@@ -59,35 +67,63 @@ const EventsScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 10,
+    backgroundColor: "#f0f0f0",
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  header: {
+    fontSize: 24,
+    fontWeight: "bold",
+    textAlign: "center",
+    padding: 16,
+    backgroundColor: "#ffffff",
+  },
+  listContainer: {
+    padding: 16,
   },
   eventContainer: {
-    backgroundColor: '#f9f9f9',
-    padding: 15,
-    marginBottom: 10,
-    borderRadius: 10,
-    borderColor: '#ddd',
-    borderWidth: 1,
+    backgroundColor: "#ffffff",
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 16,
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
   eventName: {
     fontSize: 18,
-    fontWeight: 'bold',
-  },
-  eventCategory: {
-    fontSize: 14,
-    color: '#555',
-    marginTop: 5,
+    fontWeight: "bold",
+    marginBottom: 8,
   },
   eventDescription: {
     fontSize: 14,
-    color: '#777',
-    marginTop: 5,
+    color: "#333",
+    marginBottom: 8,
+  },
+  eventDetails: {
+    fontSize: 12,
+    color: "#666",
+    marginBottom: 4,
+  },
+  noEventsText: {
+    fontSize: 16,
+    textAlign: "center",
+    marginTop: 20,
+  },
+  footer: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    alignItems: "center",
+    backgroundColor: "white",
+    paddingVertical: 12,
+    borderTopWidth: 1,
+    borderTopColor: "#E0E0E0",
   },
 });
 
-export default EventsScreen;
+export default EventosScreen;

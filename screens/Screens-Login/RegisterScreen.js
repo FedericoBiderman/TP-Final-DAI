@@ -1,15 +1,43 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import axios from 'axios';
 
 const RegisterScreen = () => {
   const [nombre, setNombre] = useState('');
   const [apellido, setApellido] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const navigation = useNavigation();
+  const baseUrl = 'https://welcome-chamois-aware.ngrok-free.app'; 
+  
+  const handleRegister = async () => {
+    try {
+      // Aquí hacemos la solicitud GET, ajusta esto para usar POST si tu API lo requiere
+      const response = await axios.post(`${baseUrl}/api/user/register`, {
+        nombre,
+        apellido,
+        username,
+        password,
+      });
 
-  const handleRegister = () => {
-    console.log('Registrando usuario:', { nombre, apellido, username, password });
+      // Simulamos la verificación de los datos recibidos
+      if (response.data.success) {
+        // Datos correctos, navegar a la Home
+        Alert.alert('Register Exitoso', 'Has ingresado correctamente.', [
+          { text: 'OK', onPress: () => navigation.replace('EventosScreen') },
+        ]);
+      } else {
+        // Datos incorrectos, mostrar alerta de error
+        Alert.alert('Error', 'Usuario, nombre, apellido o contraseña incorrectos.');
+      }
+    } catch (error) {
+      // Manejo de errores, en caso de que la solicitud falle
+      console.error(error);
+      Alert.alert('Error', 'Hubo un problema al intentar iniciar sesión.');
+    }
   };
+
 
   return (
     <View style={styles.container}>
