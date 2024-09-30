@@ -7,6 +7,7 @@ import DetalleEventosScreen from "./screens/Screens-Eventos/DetalleEventosScreen
 import { createStackNavigator } from "@react-navigation/stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import CategoriasScreen from "./screens/Screens-Categorias/CategoriasScreen.js";
+import EventosPorCategoriaScreen from "./screens/Screens-Categorias/EventosPorCategoriaScreen.js";
 import ProfileScreen from "./screens/Screens-Perfil/ProfileScreen.js";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -83,6 +84,11 @@ export default function App() {
          <Stack.Screen
           name="CategoriasScreen"
           component={CategoriasScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="EventosPorCategoriaScreen"
+          component={EventosPorCategoriaScreen}
           options={{ headerShown: false }}
         />
          <Stack.Screen

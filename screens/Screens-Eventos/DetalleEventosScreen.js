@@ -1,36 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, FlatList, SafeAreaView, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import axios from "axios";
+import { useNavigation } from "@react-navigation/native";
 
-const DetalleEventosScreen = () => {
+const DetalleEventosScreen = ({route}) => {
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [subscribed, setSubscribed] = useState(false);
   const [loadingAction, setLoadingAction] = useState(false);
+  const baseUrl = "https://welcome-chamois-aware.ngrok-free.app";
+  const navigation = useNavigation();
+  const { eventId } = route.params;
 
-  // Simulación de los detalles del evento para demostrar cómo se puede ver sin fetch
   useEffect(() => {
-    // Simula un tiempo de carga
-    setTimeout(() => {
-      // Datos simulados de un evento
-      const mockEvent = {
-        name: "Concierto de Jazz",
-        start_date: "2024-09-20",
-        description: "Un evento único de jazz en vivo.",
-        id_event_category: "Música",
-        id_event_location: "Teatro Principal",
-        duration_in_minutes: 120,
-        price: 50,
-        max_assistance: 200,
-        attended: [
-          { id: 1, name: "Juan Pérez", attended: true },
-          { id: 2, name: "María Gómez", attended: false },
-        ],
-      };
-      setEvent(mockEvent);
-      setLoading(false);  // Termina el loading
-    }, 2000);  // Simula 2 segundos de carga
+    fetchEventDetails();
   }, []);
+
+  const fetchEventDetails = async () => {
+    try {
+      const response = await axios.get(`${baseUrl}/api/event/${eventId}`);
+      setEvent(response.data);
+
+      setLoading(false);
+    } catch (error) {
+      console.error("Error al obtener los detalles del evento:", error);
+      setLoading(false);
+    }
+  };
 
   const showAlert = (title, message) => {
     Alert.alert(
@@ -41,22 +37,30 @@ const DetalleEventosScreen = () => {
     );
   };
 
-  const handleSubscribe = () => {
+  const handleSubscribe = async () => {
     setLoadingAction(true);
-    setTimeout(() => {
-      setSubscribed(true);
-      setLoadingAction(false);
+    try {
+      await axios.post(`${baseUrl}/api/event/${eventId}/enrollment/attended`);
       showAlert(event.name, 'Suscripción exitosa!');
-    }, 1000); // Simula una suscripción exitosa después de 1 segundo
+    } catch (error) {
+      console.error("Error al suscribirse:", error);
+      showAlert("Error", "No se pudo realizar la suscripción");
+    } finally {
+      setLoadingAction(false);
+    }
   };
 
-  const handleUnsubscribe = () => {
+  const handleUnsubscribe = async () => {
     setLoadingAction(true);
-    setTimeout(() => {
-      setSubscribed(false);
-      setLoadingAction(false);
+    try {
+      await axios.delete(`${baseUrl}/api/event/${eventId}/enrollment/attended`);
       showAlert(event.name, 'Te has desuscrito del evento.');
-    }, 1000); // Simula una desuscripción exitosa después de 1 segundo
+    } catch (error) {
+      console.error("Error al desuscribirse:", error);
+      showAlert("Error", "No se pudo realizar la desuscripción");
+    } finally {
+      setLoadingAction(false);
+    }
   };
 
   if (loading) {
@@ -97,12 +101,12 @@ const DetalleEventosScreen = () => {
         {isFutureEvent ? (
           <View style={styles.subscriptionContainer}>
             <TouchableOpacity
-              style={[styles.button, subscribed ? styles.unsubscribeButton : styles.subscribeButton]}
-              onPress={subscribed ? handleUnsubscribe : handleSubscribe}
+              style={[styles.button, event.subscribed ? styles.unsubscribeButton : styles.subscribeButton]}
+              onPress={event.subscribed ? handleUnsubscribe : handleSubscribe}
               disabled={loadingAction}
             >
               <Text style={styles.buttonText}>
-                {subscribed ? 'DESUSCRIBIRSE' : 'SUSCRIBIRSE'}
+                {event.subscribed ? 'DESUSCRIBIRSE' : 'SUSCRIBIRSE'}
               </Text>
             </TouchableOpacity>
           </View>
@@ -125,6 +129,24 @@ const DetalleEventosScreen = () => {
             />
           </View>
         )}
+      </View>
+      <View style={styles.tabBar}>
+        <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('EventosScreen')}>
+          <Ionicons name="calendar-outline" size={24} color="#4c669f" />
+          <Text style={styles.tabText}>Eventos</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('CategoriasScreen')}>
+          <Ionicons name="search-outline" size={24} color="#4c669f" />
+          <Text style={styles.tabText}>Categorías</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('ProfileScreen')}>
+          <Ionicons name="person-outline" size={24} color="#4c669f" />
+          <Text style={styles.tabText}>Perfil</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('LoginScreen')}>
+          <Ionicons name="menu-outline" size={24} color="#4c669f" />
+          <Text style={styles.tabText}>Menú</Text>
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
@@ -219,19 +241,26 @@ const styles = StyleSheet.create({
   attendeeName: {
     fontSize: 16,
   },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    backgroundColor: 'white',
-    paddingVertical: 12,
-    borderTopWidth: 1,
-    borderTopColor: '#E0E0E0',
-  },
   errorText: {
     fontSize: 18,
     color: 'red',
     textAlign: 'center',
+  },
+  tabBar: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    alignItems: "center",
+    backgroundColor: "white",
+    paddingVertical: 10,
+    borderTopWidth: 1,
+    borderTopColor: "#E0E0E0",
+  },
+  tabItem: {
+    alignItems: "center",
+  },
+  tabText: {
+    fontSize: 12,
+    marginTop: 4,
   },
 });
 

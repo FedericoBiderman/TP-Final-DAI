@@ -1,25 +1,30 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator,RefreshControl, StatusBar } from 'react-native';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator, RefreshControl, StatusBar } from 'react-native';
+import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
 import axios from 'axios';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+import moment from 'moment';
 
-const CategoriasScreen = () => {
-  const [categorias, setCategorias] = useState([]);
+const EventosPorCategoriaScreen = () => {
+  const [eventos, setEventos] = useState([]);
+  const [categoria, setCategoria] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const navigation = useNavigation();
+  const route = useRoute();
+  const { categoriaId } = route.params;
   const baseUrl = 'https://welcome-chamois-aware.ngrok-free.app';
 
-  const fetchCategorias = async () => {
+  const fetchEventos = async () => {
     try {
-      const response = await axios.get(`${baseUrl}/api/event-category`);
-      console.log(response);
-      console.log('Datos recibidos:', response.data.categorias?.length || 0);
-      setCategorias(response.data);
+      const eventosResponse = await axios.get(`${baseUrl}/api/event/${categoriaId}`);
+      const categoriaResponse = await axios.get(`${baseUrl}/api/event/category_name`);
+      console.log('Eventos recibidos:', eventosResponse.data.length);
+      setEventos(eventosResponse.data);
+      setCategoria(categoriaResponse.data);
     } catch (error) {
-      console.error('Error al obtener las categorías:', error);
+      console.error('Error al obtener los eventos:', error);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -27,32 +32,31 @@ const CategoriasScreen = () => {
   };
 
   useEffect(() => {
-    fetchCategorias();
-  }, []);
+    fetchEventos();
+  }, [categoriaId]);
 
   useFocusEffect(
     useCallback(() => {
-      fetchCategorias();
-    }, [])
+      fetchEventos();
+    }, [categoriaId])
   );
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
-    fetchCategorias();
+    fetchEventos();
   }, []);
 
-  const renderCategoriaItem = ({ item }) => (
+  const renderEventoItem = ({ item }) => (
     <TouchableOpacity
-      style={styles.categoriaContainer}
-      onPress={() => navigation.navigate('EventosPorCategoriaScreen', { categoriaId: item.id })}
+      style={styles.eventoContainer}
+      onPress={() => navigation.navigate('DetalleEventoScreen', { eventoId: item.id })}
     >
-      <LinearGradient
-        colors={['#4c669f', '#3b5998', '#192f6a']}
-        style={styles.categoriaGradient}
-      >
-        <Text style={styles.categoriaName}>{item.name}</Text>
-        <Text style={styles.categoriaDescription}>{item.description}</Text>
-      </LinearGradient>
+      <View style={styles.eventoInfo}>
+        <Text style={styles.eventoName}>{item.name}</Text>
+        <Text style={styles.eventoDate}>{moment(item.date).format('DD/MM/YYYY HH:mm')}</Text>
+        <Text style={styles.eventoLocation}>{item.location}</Text>
+      </View>
+      <Ionicons name="chevron-forward" size={24} color="#4c669f" style={styles.eventoArrow} />
     </TouchableOpacity>
   );
 
@@ -71,36 +75,39 @@ const CategoriasScreen = () => {
         colors={['#4c669f', '#3b5998', '#192f6a']}
         style={styles.header}
       >
-        <Text style={styles.headerText}>CATEGORÍAS</Text>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+          <Ionicons name="arrow-back" size={24} color="#ffffff" />
+        </TouchableOpacity>
+        <Text style={styles.headerText}>{categoria ? categoria.name : 'Eventos'}</Text>
       </LinearGradient>
       <FlatList
-        data={categorias}
-        renderItem={renderCategoriaItem}
+        data={eventos}
+        renderItem={renderEventoItem}
         keyExtractor={(item) => item.id.toString()}
         contentContainerStyle={styles.listContainer}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
         ListEmptyComponent={
-          <Text style={styles.noCategoriasText}>No hay categorías disponibles</Text>
+          <Text style={styles.noEventosText}>No hay eventos disponibles para esta categoría</Text>
         }
       />
       <View style={styles.footer}>
-      <TouchableOpacity style={styles.footerItem} onPress={() => navigation.navigate('DetalleEventosScreen')}>
+        <TouchableOpacity style={styles.footerItem} onPress={() => navigation.navigate('DetalleEventosScreen')}>
           <Ionicons name="calendar-outline" size={24} color="#4c669f" />
-          <Text style={styles.tabText}>Eventos</Text>
+          <Text style={styles.footerText}>Eventos</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.footerItem} onPress={() => navigation.navigate('CategoriasScreen')}>
           <Ionicons name="search-outline" size={24} color="#4c669f" />
-          <Text style={styles.tabText}>Categorías</Text>
+          <Text style={styles.footerText}>Categorías</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.footerItem} onPress={() => navigation.navigate('ProfileScreen')}>
           <Ionicons name="person-outline" size={24} color="#4c669f" />
-          <Text style={styles.tabText}>Perfil</Text>
+          <Text style={styles.footerText}>Perfil</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.footerItem} onPress={() => navigation.navigate('LoginScreen')}>
           <Ionicons name="menu-outline" size={24} color="#4c669f" />
-          <Text style={styles.tabText}>Menú</Text>
+          <Text style={styles.footerText}>Menú</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -121,41 +128,61 @@ const styles = StyleSheet.create({
   header: {
     padding: 16,
     paddingTop: StatusBar.currentHeight + 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  backButton: {
+    marginRight: 16,
   },
   headerText: {
     fontSize: 24,
     fontWeight: 'bold',
     color: '#ffffff',
-    textAlign: 'center',
+    flex: 1,
   },
   listContainer: {
     padding: 16,
   },
-  categoriaContainer: {
+  eventoContainer: {
+    flexDirection: 'row',
+    backgroundColor: '#ffffff',
+    borderRadius: 8,
     marginBottom: 16,
-    borderRadius: 8,
     overflow: 'hidden',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
-  categoriaGradient: {
-    padding: 16,
+  eventoImage: {
+    width: 80,
+    height: 80,
   },
-  categoriaImage: {
-    width: '100%',
-    height: 150,
-    borderRadius: 8,
-    marginBottom: 8,
+  eventoInfo: {
+    flex: 1,
+    padding: 12,
   },
-  categoriaName: {
-    fontSize: 18,
+  eventoName: {
+    fontSize: 16,
     fontWeight: 'bold',
-    color: '#ffffff',
+    color: '#333',
     marginBottom: 4,
   },
-  categoriaDescription: {
+  eventoDate: {
     fontSize: 14,
-    color: '#e0e0e0',
+    color: '#666',
+    marginBottom: 2,
   },
-  noCategoriasText: {
+  eventoLocation: {
+    fontSize: 14,
+    color: '#666',
+  },
+  eventoArrow: {
+    alignSelf: 'center',
+    paddingRight: 12,
+  },
+  noEventosText: {
     fontSize: 16,
     textAlign: 'center',
     marginTop: 20,
@@ -180,4 +207,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default CategoriasScreen;
+export default EventosPorCategoriaScreen;

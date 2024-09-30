@@ -1,20 +1,28 @@
 import React, { useState, useEffect } from "react";
-import {View,Text,ScrollView,TouchableOpacity,StyleSheet,ActivityIndicator} from "react-native";
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  StyleSheet,
+  ActivityIndicator,
+  SafeAreaView,
+} from "react-native";
 import { useNavigation } from "@react-navigation/native";
-
+import { Ionicons } from '@expo/vector-icons';
 import axios from "axios";
 
 const EventosScreen = () => {
   const [eventos, setEventos] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigation = useNavigation();
-  const baseUrl = "https://welcome-chamois-aware.ngrok-free.app"; // Reemplaza con tu base URL
+  const baseUrl = "https://welcome-chamois-aware.ngrok-free.app";
 
   const fetchEventos = async () => {
     try {
       const response = await axios.get(`${baseUrl}/api/event`);
-      console.log("Datos recibidos:", response.data.events.length); // Para depuración
-      setEventos(response.data.events); // Asumimos que los eventos están en response.data.events
+      console.log("Datos recibidos:", response.data.events.length);
+      setEventos(response.data.events);
       setLoading(false);
     } catch (error) {
       console.error("Error al obtener los eventos:", error);
@@ -38,6 +46,7 @@ const EventosScreen = () => {
       <Text style={styles.eventDescription}>{item.description}</Text>
       <Text style={styles.eventDetails}>
         Fecha: {new Date(item.start_date).toLocaleDateString()}
+        id: {item.id}
       </Text>
     </TouchableOpacity>
   );
@@ -51,7 +60,7 @@ const EventosScreen = () => {
   }
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <Text style={styles.header}>EVENTOS</Text>
       <ScrollView contentContainerStyle={styles.listContainer}>
         {eventos.length > 0 ? (
@@ -60,7 +69,25 @@ const EventosScreen = () => {
           <Text style={styles.noEventsText}>No hay eventos disponibles</Text>
         )}
       </ScrollView>
-    </View>
+      <View style={styles.tabBar}>
+        <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('DetalleEventosScreen')}>
+          <Ionicons name="calendar-outline" size={24} color="#4c669f" />
+          <Text style={styles.tabText}>Eventos</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('CategoriasScreen')}>
+          <Ionicons name="search-outline" size={24} color="#4c669f" />
+          <Text style={styles.tabText}>Categorías</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('ProfileScreen')}>
+          <Ionicons name="person-outline" size={24} color="#4c669f" />
+          <Text style={styles.tabText}>Perfil</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('LoginScreen')}>
+          <Ionicons name="menu-outline" size={24} color="#4c669f" />
+          <Text style={styles.tabText}>Menú</Text>
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
   );
 };
 
@@ -115,14 +142,21 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginTop: 20,
   },
-  footer: {
+  tabBar: {
     flexDirection: "row",
     justifyContent: "space-around",
     alignItems: "center",
     backgroundColor: "white",
-    paddingVertical: 12,
+    paddingVertical: 10,
     borderTopWidth: 1,
     borderTopColor: "#E0E0E0",
+  },
+  tabItem: {
+    alignItems: "center",
+  },
+  tabText: {
+    fontSize: 12,
+    marginTop: 4,
   },
 });
 
