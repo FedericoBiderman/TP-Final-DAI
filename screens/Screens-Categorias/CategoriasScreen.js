@@ -10,7 +10,7 @@ const CategoriasScreen = () => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const navigation = useNavigation();
-  const baseUrl = 'https://welcome-chamois-aware.ngrok-free.app';
+  const baseUrl = ' https://welcome-chamois-aware.ngrok-free.app';
 
   const fetchCategorias = async () => {
     try {

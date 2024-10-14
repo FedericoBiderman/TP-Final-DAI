@@ -8,7 +8,7 @@ const DetalleEventosScreen = ({route}) => {
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [loadingAction, setLoadingAction] = useState(false);
-  const baseUrl = "https://welcome-chamois-aware.ngrok-free.app";
+  const baseUrl = " https://welcome-chamois-aware.ngrok-free.app";
   const navigation = useNavigation();
   const { eventId } = route.params;
 
@@ -92,7 +92,7 @@ const DetalleEventosScreen = ({route}) => {
         <Text style={styles.eventDescription}>{event.description}</Text>
         <View style={styles.eventDetails}>
           <Text style={styles.detailText}>Categoría: {event.id_event_category}</Text>
-          <Text style={styles.detailText}>Ubicación: {event.id_event_location}</Text>
+          <Text style={styles.detailText}>Ubicación: {event.location_name}</Text>
           <Text style={styles.detailText}>Duración en minutos: {event.duration_in_minutes}</Text>
           <Text style={styles.detailText}>Precio: ${event.price}</Text>
           <Text style={styles.detailText}>Capacidad: {event.max_assistance}</Text>

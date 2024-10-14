@@ -1,28 +1,26 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator, RefreshControl, StatusBar } from 'react-native';
-import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import axios from 'axios';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import moment from 'moment';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const EventosPorCategoriaScreen = () => {
   const [eventos, setEventos] = useState([]);
-  const [categoria, setCategoria] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const navigation = useNavigation();
-  const route = useRoute();
-  const { categoriaId } = route.params;
   const baseUrl = 'https://welcome-chamois-aware.ngrok-free.app';
 
   const fetchEventos = async () => {
     try {
-      const eventosResponse = await axios.get(`${baseUrl}/api/event/${categoriaId}`);
-      const categoriaResponse = await axios.get(`${baseUrl}/api/event/category_name`);
+      const miUrl = `${baseUrl}/api/event/?category=Obras Teatrales`;
+      console.log('miUrl', miUrl);
+      const eventosResponse = await axios.get(miUrl);
+      console.log('eventosResponse', eventosResponse);
       console.log('Eventos recibidos:', eventosResponse.data.length);
       setEventos(eventosResponse.data);
-      setCategoria(categoriaResponse.data);
     } catch (error) {
       console.error('Error al obtener los eventos:', error);
     } finally {
@@ -33,12 +31,12 @@ const EventosPorCategoriaScreen = () => {
 
   useEffect(() => {
     fetchEventos();
-  }, [categoriaId]);
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
       fetchEventos();
-    }, [categoriaId])
+    }, [])
   );
 
   const onRefresh = useCallback(() => {
@@ -48,15 +46,15 @@ const EventosPorCategoriaScreen = () => {
 
   const renderEventoItem = ({ item }) => (
     <TouchableOpacity
-      style={styles.eventoContainer}
-      onPress={() => navigation.navigate('DetalleEventoScreen', { eventoId: item.id })}
+      style={styles.eventContainer}
+      onPress={() => navigation.navigate('DetalleEventosScreen', { eventId: item.id })}
     >
-      <View style={styles.eventoInfo}>
-        <Text style={styles.eventoName}>{item.name}</Text>
-        <Text style={styles.eventoDate}>{moment(item.date).format('DD/MM/YYYY HH:mm')}</Text>
-        <Text style={styles.eventoLocation}>{item.location}</Text>
-      </View>
-      <Ionicons name="chevron-forward" size={24} color="#4c669f" style={styles.eventoArrow} />
+      <Text style={styles.eventName}>{item.name}</Text>
+      <Text style={styles.eventDescription}>{item.description}</Text>
+      <Text style={styles.eventDetails}>
+        Fecha: {new Date(item.start_date).toLocaleDateString()}
+        {item.id && ` - ID: ${item.id}`}
+      </Text>
     </TouchableOpacity>
   );
 
@@ -69,7 +67,7 @@ const EventosPorCategoriaScreen = () => {
   }
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" />
       <LinearGradient
         colors={['#4c669f', '#3b5998', '#192f6a']}
@@ -78,7 +76,7 @@ const EventosPorCategoriaScreen = () => {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color="#ffffff" />
         </TouchableOpacity>
-        <Text style={styles.headerText}>{categoria ? categoria.name : 'Eventos'}</Text>
+        <Text style={styles.headerText}>Obras Teatrales</Text>
       </LinearGradient>
       <FlatList
         data={eventos}
@@ -110,7 +108,7 @@ const EventosPorCategoriaScreen = () => {
           <Text style={styles.footerText}>Menú</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -127,7 +125,6 @@ const styles = StyleSheet.create({
   },
   header: {
     padding: 16,
-    paddingTop: StatusBar.currentHeight + 16,
     flexDirection: 'row',
     alignItems: 'center',
   },
@@ -143,44 +140,31 @@ const styles = StyleSheet.create({
   listContainer: {
     padding: 16,
   },
-  eventoContainer: {
-    flexDirection: 'row',
+  eventContainer: {
     backgroundColor: '#ffffff',
     borderRadius: 8,
+    padding: 16,
     marginBottom: 16,
-    overflow: 'hidden',
     elevation: 3,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
   },
-  eventoImage: {
-    width: 80,
-    height: 80,
-  },
-  eventoInfo: {
-    flex: 1,
-    padding: 12,
-  },
-  eventoName: {
-    fontSize: 16,
+  eventName: {
+    fontSize: 18,
     fontWeight: 'bold',
+    marginBottom: 8,
     color: '#333',
-    marginBottom: 4,
   },
-  eventoDate: {
+  eventDescription: {
     fontSize: 14,
     color: '#666',
-    marginBottom: 2,
+    marginBottom: 8,
   },
-  eventoLocation: {
-    fontSize: 14,
-    color: '#666',
-  },
-  eventoArrow: {
-    alignSelf: 'center',
-    paddingRight: 12,
+  eventDetails: {
+    fontSize: 12,
+    color: '#999',
   },
   noEventosText: {
     fontSize: 16,

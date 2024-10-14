@@ -1,22 +1,37 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image, ActivityIndicator, SafeAreaView, ScrollView } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, ActivityIndicator, StyleSheet, Button } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
-import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import jwtDecode from 'react-native-jwt-decoder';  // Decodificador JWT
 
 const ProfileScreen = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigation = useNavigation();
   const baseUrl = "https://welcome-chamois-aware.ngrok-free.app";
+
   useEffect(() => {
     fetchUserProfile();
   }, []);
 
   const fetchUserProfile = async () => {
     try {
-      const response = await axios.get(`${baseUrl}/api/user/profile`);
-      setUser(response.data);
+      const token = await AsyncStorage.getItem('userToken');
+
+      if (token) {
+        // Decodificamos el token JWT para obtener el userId
+        const decodedToken = await jwtDecode(token);
+        const userId = decodedToken.id;  // Aquí obtenemos el userId del token
+
+        // Realizamos la solicitud al servidor para obtener el perfil del usuario
+        const response = await axios.get(`${baseUrl}/api/user/${userId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        setUser(response.data);
+      }
+      
       setLoading(false);
     } catch (error) {
       console.error('Error al obtener los datos del usuario:', error);
@@ -26,7 +41,8 @@ const ProfileScreen = () => {
 
   const handleLogout = async () => {
     try {
-      await axios.post(`${baseUrl}/api/auth/logout`);
+      await AsyncStorage.removeItem('userToken');
+      await AsyncStorage.removeItem('userId');
       navigation.replace('LoginScreen');
     } catch (error) {
       console.error('Error al cerrar sesión:', error);
@@ -50,40 +66,23 @@ const ProfileScreen = () => {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Mi Perfil</Text>
         </View>
         
         <View style={styles.profileImageContainer}>
-          {user.image ? (
-            <Image source={{ uri: user.image }} style={styles.profileImage} />
-          ) : (
-            <View style={styles.defaultImageContainer}>
-              <Ionicons name="person" size={80} color="#FFFFFF" />
-            </View>
-          )}
+          <View style={styles.defaultImageContainer}>
+            <Ionicons name="person" size={80} color="#FFFFFF" />
+          </View>
         </View>
 
         <View style={styles.infoContainer}>
-          <Text style={styles.name}>{`${user.nombre} ${user.apellido}`}</Text>
+          <Text style={styles.name}>{`${user.first_name} ${user.last_name}`}</Text>
           <Text style={styles.email}>{user.email}</Text>
-        </View>
-
-        <View style={styles.statsContainer}>
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>0</Text>
-            <Text style={styles.statLabel}>Eventos</Text>
-          </View>
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>0</Text>
-            <Text style={styles.statLabel}>Amigos</Text>
-          </View>
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>0</Text>
-            <Text style={styles.statLabel}>Fotos</Text>
-          </View>
+          <Text style={styles.
+            userId}>ID: {user.id}</Text>
         </View>
 
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
@@ -93,9 +92,8 @@ const ProfileScreen = () => {
     </SafeAreaView>
   );
 };
-
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
     backgroundColor: '#F0F0F0',
   },
@@ -103,6 +101,11 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  container: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
@@ -120,13 +123,6 @@ const styles = StyleSheet.create({
   profileImageContainer: {
     alignItems: 'center',
     marginTop: -50,
-  },
-  profileImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    borderWidth: 3,
-    borderColor: '#FFFFFF',
   },
   defaultImageContainer: {
     width: 100,
@@ -147,28 +143,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#333333',
   },
-  email: {
-    fontSize: 16,
-    color: '#666666',
-    marginTop: 5,
-  },
-  statsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginBottom: 20,
-  },
-  statItem: {
-    alignItems: 'center',
-  },
-  statNumber: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#4A90E2',
-  },
-  statLabel: {
-    fontSize: 14,
-    color: '#666666',
-  },
   logoutButton: {
     backgroundColor: '#FF3B30',
     paddingVertical: 12,
@@ -186,6 +160,17 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: '#FF3B30',
     textAlign: 'center',
+  },
+
+  email: {
+    fontSize: 18,
+    color: '#666666',
+    marginTop: 5,
+  },
+  userId: {
+    fontSize: 16,
+    color: '#888888',
+    marginTop: 5,
   },
 });
 

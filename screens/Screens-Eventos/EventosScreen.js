@@ -16,7 +16,7 @@ const EventosScreen = () => {
   const [eventos, setEventos] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigation = useNavigation();
-  const baseUrl = "https://welcome-chamois-aware.ngrok-free.app";
+  const baseUrl = " https://welcome-chamois-aware.ngrok-free.app";
 
   const fetchEventos = async () => {
     try {

@@ -9,14 +9,14 @@ const RegisterScreen = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const navigation = useNavigation();
-  const baseUrl = 'https://welcome-chamois-aware.ngrok-free.app'; 
+  const baseUrl = ' https://welcome-chamois-aware.ngrok-free.app'; 
   
   const handleRegister = async () => {
     try {
       // Aquí hacemos la solicitud GET, ajusta esto para usar POST si tu API lo requiere
       const response = await axios.post(`${baseUrl}/api/user/register`, {
-        nombre,
-        apellido,
+        first_name,
+        last_name,
         username,
         password,
       });
