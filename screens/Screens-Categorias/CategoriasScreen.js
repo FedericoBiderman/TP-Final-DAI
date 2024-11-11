@@ -10,7 +10,7 @@ const CategoriasScreen = () => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const navigation = useNavigation();
-  const baseUrl = ' https://welcome-chamois-aware.ngrok-free.app';
+  const baseUrl = 'https://welcome-chamois-aware.ngrok-free.app';
 
   const fetchCategorias = async () => {
     try {
@@ -44,7 +44,7 @@ const CategoriasScreen = () => {
   const renderCategoriaItem = ({ item }) => (
     <TouchableOpacity
       style={styles.categoriaContainer}
-      onPress={() => navigation.navigate('EventosPorCategoriaScreen', { categoriaId: item.id })}
+      onPress={() => navigation.navigate('EventosScreen', { categoriaId: item.id, categoriaNombre: item.name })}
     >
       <LinearGradient
         colors={['#4c669f', '#3b5998', '#192f6a']}
@@ -55,6 +55,7 @@ const CategoriasScreen = () => {
       </LinearGradient>
     </TouchableOpacity>
   );
+  
 
   if (loading) {
     return (

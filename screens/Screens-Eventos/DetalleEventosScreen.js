@@ -8,7 +8,7 @@ const DetalleEventosScreen = ({route}) => {
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [loadingAction, setLoadingAction] = useState(false);
-  const baseUrl = " https://welcome-chamois-aware.ngrok-free.app";
+  const baseUrl = "https://welcome-chamois-aware.ngrok-free.app";
   const navigation = useNavigation();
   const { eventId } = route.params;
 

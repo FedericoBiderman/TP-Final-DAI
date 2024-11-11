@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator, RefreshControl, StatusBar } from 'react-native';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { useNavigation, useFocusEffect, useRoute } from '@react-navigation/native'; // Añadir useRoute
 import axios from 'axios';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -11,15 +11,14 @@ const EventosPorCategoriaScreen = () => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const navigation = useNavigation();
+  const route = useRoute();
   const baseUrl = 'https://welcome-chamois-aware.ngrok-free.app';
+  const categoriaNombre = route.params?.categoriaNombre || 'Eventos';
 
   const fetchEventos = async () => {
     try {
-      const miUrl = `${baseUrl}/api/event/?category=Obras Teatrales`;
-      console.log('miUrl', miUrl);
+      const miUrl = `${baseUrl}/api/event/?category=${categoriaNombre}`;
       const eventosResponse = await axios.get(miUrl);
-      console.log('eventosResponse', eventosResponse);
-      console.log('Eventos recibidos:', eventosResponse.data.length);
       setEventos(eventosResponse.data);
     } catch (error) {
       console.error('Error al obtener los eventos:', error);
@@ -36,14 +35,15 @@ const EventosPorCategoriaScreen = () => {
   useFocusEffect(
     useCallback(() => {
       fetchEventos();
-    }, [])
+    }, [categoriaNombre])
   );
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     fetchEventos();
-  }, []);
+  }, [categoriaNombre]);
 
+  // Definir renderEventoItem aquí
   const renderEventoItem = ({ item }) => (
     <TouchableOpacity
       style={styles.eventContainer}
@@ -58,14 +58,6 @@ const EventosPorCategoriaScreen = () => {
     </TouchableOpacity>
   );
 
-  if (loading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#4c669f" />
-      </View>
-    );
-  }
-
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" />
@@ -76,11 +68,11 @@ const EventosPorCategoriaScreen = () => {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color="#ffffff" />
         </TouchableOpacity>
-        <Text style={styles.headerText}>Obras Teatrales</Text>
+        <Text style={styles.headerText}>{categoriaNombre}</Text>
       </LinearGradient>
       <FlatList
         data={eventos}
-        renderItem={renderEventoItem}
+        renderItem={renderEventoItem} // Usar la función definida
         keyExtractor={(item) => item.id.toString()}
         contentContainerStyle={styles.listContainer}
         refreshControl={

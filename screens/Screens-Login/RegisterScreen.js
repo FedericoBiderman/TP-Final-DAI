@@ -9,7 +9,7 @@ const RegisterScreen = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const navigation = useNavigation();
-  const baseUrl = ' https://welcome-chamois-aware.ngrok-free.app'; 
+  const baseUrl = 'https://welcome-chamois-aware.ngrok-free.app'; 
   
   const handleRegister = async () => {
     try {

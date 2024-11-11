@@ -8,7 +8,7 @@ import {
   ActivityIndicator,
   SafeAreaView,
 } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import { Ionicons } from '@expo/vector-icons';
 import axios from "axios";
 
@@ -16,13 +16,33 @@ const EventosScreen = () => {
   const [eventos, setEventos] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigation = useNavigation();
-  const baseUrl = " https://welcome-chamois-aware.ngrok-free.app";
+  const route = useRoute();
+  
+  const baseUrl = "https://welcome-chamois-aware.ngrok-free.app";
+  
+  // Obtenemos categoriaId y categoriaNombre desde los parámetros
+  const categoriaId = route.params?.categoriaId;
+  const categoriaNombre = route.params?.categoriaNombre;
 
   const fetchEventos = async () => {
     try {
-      const response = await axios.get(`${baseUrl}/api/event`);
-      console.log("Datos recibidos:", response.data.events.length);
-      setEventos(response.data.events);
+      // Limpia los eventos y muestra el indicador de carga antes de la solicitud
+      setEventos([]);
+      setLoading(true);
+
+      // Define la URL basada en la presencia de categoriaNombre
+      const miUrl = categoriaNombre
+        ? `${baseUrl}/api/event?category=${categoriaNombre}`
+        : `${baseUrl}/api/event`;
+  
+      console.log("URL solicitada:", miUrl);
+  
+      // Realiza la solicitud a la URL correcta
+      const response = await axios.get(miUrl);
+  
+      console.log("Datos recibidos:", response.data);
+  
+      setEventos(response.data.events || []); // Asegura que siempre se establezca un array vacío si no hay eventos
       setLoading(false);
     } catch (error) {
       console.error("Error al obtener los eventos:", error);
@@ -32,7 +52,7 @@ const EventosScreen = () => {
 
   useEffect(() => {
     fetchEventos();
-  }, []);
+  }, [categoriaNombre]); // Dependencia en categoriaNombre para recargar cuando cambie
 
   const renderEventItem = (item) => (
     <TouchableOpacity
@@ -61,7 +81,7 @@ const EventosScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.header}>EVENTOS</Text>
+      <Text style={styles.header}>EVENTOS {categoriaNombre ? `- ${categoriaNombre}` : ""}</Text>
       <ScrollView contentContainerStyle={styles.listContainer}>
         {eventos.length > 0 ? (
           eventos.map(renderEventItem)

@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ActivityIndicator, StyleSheet, Button } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, SafeAreaView, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import jwtDecode from 'react-native-jwt-decoder';  // Decodificador JWT
 
 const ProfileScreen = () => {
   const [user, setUser] = useState(null);
@@ -21,21 +20,22 @@ const ProfileScreen = () => {
 
       if (token) {
         // Decodificamos el token JWT para obtener el userId
-        const decodedToken = await jwtDecode(token);
+        /*const decodedToken = await jwtDecode(token);
         const userId = decodedToken.id;  // Aquí obtenemos el userId del token
+        */
 
         // Realizamos la solicitud al servidor para obtener el perfil del usuario
-        const response = await axios.get(`${baseUrl}/api/user/${userId}`, {
+        const response = await axios.get(`${baseUrl}/api/user/profile/data`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         
         setUser(response.data);
       }
       
-      setLoading(false);
+      //setLoading(false);
     } catch (error) {
       console.error('Error al obtener los datos del usuario:', error);
-      setLoading(false);
+      //setLoading(false);
     }
   };
 
@@ -48,7 +48,7 @@ const ProfileScreen = () => {
       console.error('Error al cerrar sesión:', error);
     }
   };
-
+/*
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -56,6 +56,7 @@ const ProfileScreen = () => {
       </View>
     );
   }
+  */
 
   if (!user) {
     return (
@@ -70,12 +71,6 @@ const ProfileScreen = () => {
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Mi Perfil</Text>
-        </View>
-        
-        <View style={styles.profileImageContainer}>
-          <View style={styles.defaultImageContainer}>
-            <Ionicons name="person" size={80} color="#FFFFFF" />
-          </View>
         </View>
 
         <View style={styles.infoContainer}>
