@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import axios from "axios";
 import { useNavigation } from "@react-navigation/native";
 
-const DetalleEventosScreen = ({route}) => {
+const DetalleEventosScreen = ({ route }) => {
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [loadingAction, setLoadingAction] = useState(false);
@@ -19,8 +19,8 @@ const DetalleEventosScreen = ({route}) => {
   const fetchEventDetails = async () => {
     try {
       const response = await axios.get(`${baseUrl}/api/event/${eventId}`);
+      console.log("Datos recibidos:", JSON.stringify(response.data)); // Log detallado
       setEvent(response.data);
-
       setLoading(false);
     } catch (error) {
       console.error("Error al obtener los detalles del evento:", error);
@@ -98,7 +98,31 @@ const DetalleEventosScreen = ({route}) => {
           <Text style={styles.detailText}>Capacidad: {event.max_assistance}</Text>
         </View>
 
-        {isFutureEvent ? (
+        {!isFutureEvent ? (
+          <View style={styles.attendeesContainer}>
+            <Text style={styles.attendeesTitle}>INSCRITOS</Text>
+            {event.attended && event.attended.length > 0 ? (
+              <FlatList
+                data={event.attended}
+                keyExtractor={(item) => item.id.toString()}
+                renderItem={({ item }) => (
+                  <View style={styles.attendeeItem}>
+                    <Text style={styles.attendeeName}>
+                      {item.first_name} {item.last_name}
+                    </Text>
+                    <Ionicons
+                      name={item.attended ? "checkmark-circle" : "close-circle"}
+                      size={24}
+                      color={item.attended ? "#4CAF50" : "#F44336"}
+                    />
+                  </View>
+                )}
+              />
+            ) : (
+              <Text style={styles.noAttendeesText}>No hay inscritos en este evento.</Text>
+            )}
+          </View>
+        ) : (
           <View style={styles.subscriptionContainer}>
             <TouchableOpacity
               style={[styles.button, event.subscribed ? styles.unsubscribeButton : styles.subscribeButton]}
@@ -109,24 +133,6 @@ const DetalleEventosScreen = ({route}) => {
                 {event.subscribed ? 'DESUSCRIBIRSE' : 'SUSCRIBIRSE'}
               </Text>
             </TouchableOpacity>
-          </View>
-        ) : (
-          <View style={styles.attendeesContainer}>
-            <Text style={styles.attendeesTitle}>INSCRITOS</Text>
-            <FlatList
-              data={event.attended}
-              keyExtractor={(item) => item.id.toString()}
-              renderItem={({ item }) => (
-                <View style={styles.attendeeItem}>
-                  <Text style={styles.attendeeName}>{item.name}</Text>
-                  <Ionicons
-                    name={item.attended ? "checkmark-circle" : "close-circle"}
-                    size={24}
-                    color={item.attended ? "#4CAF50" : "#F44336"}
-                  />
-                </View>
-              )}
-            />
           </View>
         )}
       </View>
@@ -261,6 +267,12 @@ const styles = StyleSheet.create({
   tabText: {
     fontSize: 12,
     marginTop: 4,
+  },
+  noAttendeesText: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    marginTop: 16,
   },
 });
 
