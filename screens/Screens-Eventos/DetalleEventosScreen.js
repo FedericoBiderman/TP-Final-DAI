@@ -3,23 +3,49 @@ import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, FlatList, 
 import { Ionicons } from '@expo/vector-icons';
 import axios from "axios";
 import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect } from '@react-navigation/native';
 
-const DetalleEventosScreen = ({ route }) => {
+const DetalleEventosScreen = ({ route, userData }) => {
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [loadingAction, setLoadingAction] = useState(false);
+  const [usuarioInscripto, setUsuarioInscripto] = useState(false);
   const baseUrl = "https://welcome-chamois-aware.ngrok-free.app";
   const navigation = useNavigation();
   const { eventId } = route.params;
 
-  useEffect(() => {
-    fetchEventDetails();
-  }, []);
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchEventDetails();
+      verificarInscripcion();
+    }, [eventId, userData?.usuario?.id])
+  );
+
+  const verificarInscripcion = async () => {
+    try {
+      const response = await axios.get(`${baseUrl}/api/event/${eventId}/enrollment`);
+      // Verificamos si hay datos y es un array
+      if (response.data && Array.isArray(response.data) && response.data.length > 0) {
+        const inscripciones = response.data;
+        // Buscamos si el usuario actual está inscrito
+        const estaInscrito = inscripciones.some(inscripcion => 
+          inscripcion.user_id === userData?.usuario?.id
+        );
+        setUsuarioInscripto(estaInscrito);
+      } else {
+        // Si no hay inscripciones, el usuario no está inscrito
+        setUsuarioInscripto(false);
+      }
+    } catch (error) {
+      console.error("Error al verificar inscripción:", error);
+      // En caso de error, asumimos que no está inscrito
+      setUsuarioInscripto(false);
+    }
+  };
 
   const fetchEventDetails = async () => {
     try {
       const response = await axios.get(`${baseUrl}/api/event/${eventId}`);
-      console.log("Datos recibidos:", JSON.stringify(response.data)); // Log detallado
       setEvent(response.data);
       setLoading(false);
     } catch (error) {
@@ -28,20 +54,22 @@ const DetalleEventosScreen = ({ route }) => {
     }
   };
 
-  const showAlert = (title, message) => {
-    Alert.alert(
-      title,
-      message,
-      [{ text: 'OK', onPress: () => console.log('OK Pressed') }],
-      { cancelable: false }
-    );
-  };
-
   const handleSubscribe = async () => {
     setLoadingAction(true);
     try {
-      await axios.post(`${baseUrl}/api/event/${eventId}/enrollment/attended`);
+      await axios.post(`${baseUrl}/api/event/${eventId}/enrollment`, {
+        id_event: eventId,
+        id_user: userData?.usuario?.id,
+        description: '',
+        attended: 0,
+        observations: '',
+        rating: '',
+      }, {
+        headers: { Authorization: `Bearer ${userData?.token}` },
+      });
+      setUsuarioInscripto(true);
       showAlert(event.name, 'Suscripción exitosa!');
+      fetchEventDetails();
     } catch (error) {
       console.error("Error al suscribirse:", error);
       showAlert("Error", "No se pudo realizar la suscripción");
@@ -53,14 +81,28 @@ const DetalleEventosScreen = ({ route }) => {
   const handleUnsubscribe = async () => {
     setLoadingAction(true);
     try {
-      await axios.delete(`${baseUrl}/api/event/${eventId}/enrollment/attended`);
+      await axios.delete(`${baseUrl}/api/event/${eventId}/enrollment`, {
+        data: { id_user: userData?.usuario?.id },
+        headers: { Authorization: `Bearer ${userData?.token}` },
+      });
+      setUsuarioInscripto(false);
       showAlert(event.name, 'Te has desuscrito del evento.');
+      fetchEventDetails();
     } catch (error) {
       console.error("Error al desuscribirse:", error);
       showAlert("Error", "No se pudo realizar la desuscripción");
     } finally {
       setLoadingAction(false);
     }
+  };
+
+  const showAlert = (title, message) => {
+    Alert.alert(
+      title,
+      message,
+      [{ text: 'OK', onPress: () => console.log('OK Pressed') }],
+      { cancelable: false }
+    );
   };
 
   if (loading) {
@@ -125,12 +167,12 @@ const DetalleEventosScreen = ({ route }) => {
         ) : (
           <View style={styles.subscriptionContainer}>
             <TouchableOpacity
-              style={[styles.button, event.subscribed ? styles.unsubscribeButton : styles.subscribeButton]}
-              onPress={event.subscribed ? handleUnsubscribe : handleSubscribe}
+              style={[styles.button, usuarioInscripto ? styles.unsubscribeButton : styles.subscribeButton]}
+              onPress={usuarioInscripto ? handleUnsubscribe : handleSubscribe}
               disabled={loadingAction}
             >
               <Text style={styles.buttonText}>
-                {event.subscribed ? 'DESUSCRIBIRSE' : 'SUSCRIBIRSE'}
+                {usuarioInscripto ? 'DESUSCRIBIRSE' : 'SUSCRIBIRSE'}
               </Text>
             </TouchableOpacity>
           </View>
@@ -157,7 +199,6 @@ const DetalleEventosScreen = ({ route }) => {
     </SafeAreaView>
   );
 };
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,

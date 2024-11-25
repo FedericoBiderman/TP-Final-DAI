@@ -1,19 +1,18 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
+import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
 
 const RegisterScreen = () => {
-  const [nombre, setNombre] = useState('');
-  const [apellido, setApellido] = useState('');
+  const [first_name, setNombre] = useState('');
+  const [last_name, setApellido] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const navigation = useNavigation();
-  const baseUrl = 'https://welcome-chamois-aware.ngrok-free.app'; 
-  
+  const baseUrl = 'https://welcome-chamois-aware.ngrok-free.app';
+
   const handleRegister = async () => {
     try {
-      // Aquí hacemos la solicitud GET, ajusta esto para usar POST si tu API lo requiere
       const response = await axios.post(`${baseUrl}/api/user/register`, {
         first_name,
         last_name,
@@ -21,23 +20,24 @@ const RegisterScreen = () => {
         password,
       });
 
-      // Simulamos la verificación de los datos recibidos
-      if (response.data.success) {
-        // Datos correctos, navegar a la Home
-        Alert.alert('Register Exitoso', 'Has ingresado correctamente.', [
+      // Verificar si el registro fue exitoso
+      if (response.status === 201 || response.status === 200) {
+        Alert.alert('Registro Exitoso', 'Te has registrado correctamente.', [
           { text: 'OK', onPress: () => navigation.replace('EventosScreen') },
         ]);
       } else {
-        // Datos incorrectos, mostrar alerta de error
-        Alert.alert('Error', 'Usuario, nombre, apellido o contraseña incorrectos.');
+        // Respuesta no esperada
+        Alert.alert('Error', 'No se pudo completar el registro.');
       }
     } catch (error) {
-      // Manejo de errores, en caso de que la solicitud falle
       console.error(error);
-      Alert.alert('Error', 'Hubo un problema al intentar iniciar sesión.');
+      // Manejar errores correctamente
+      Alert.alert(
+        'Error',
+        error.response?.data?.message || 'Hubo un problema al intentar registrarse.'
+      );
     }
   };
-
 
   return (
     <View style={styles.container}>
@@ -46,14 +46,14 @@ const RegisterScreen = () => {
       <TextInput
         placeholder="Nombre"
         style={styles.input}
-        value={nombre} 
+        value={first_name}
         onChangeText={setNombre}
       />
 
       <TextInput
         placeholder="Apellido"
         style={styles.input}
-        value={apellido}
+        value={last_name}
         onChangeText={setApellido}
       />
 
