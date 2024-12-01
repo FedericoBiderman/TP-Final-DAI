@@ -23,6 +23,7 @@ const CategoriasScreen = () => {
     } finally {
       setLoading(false);
       setRefreshing(false);
+      //a
     }
   };
 
