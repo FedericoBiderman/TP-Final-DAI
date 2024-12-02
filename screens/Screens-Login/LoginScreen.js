@@ -5,10 +5,10 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const LoginScreen = () => {
-  const [username, setUsername] = useState('federicoeitan@gmail.com');
-  const [password, setPassword] = useState('fedbid114');
+  const [username, setUsername] = useState('pablo.ulman@ort.edu.ar');
+  const [password, setPassword] = useState('pabulm101');
   const navigation = useNavigation();
-  const baseUrl = 'https://welcome-chamois-aware.ngrok-free.app'; 
+  const baseUrl = 'https://properly-definite-mastodon.ngrok-free.app'; 
 
   const handleLogin = async () => {
     try {

@@ -18,7 +18,7 @@ const EventosScreen = () => {
   const navigation = useNavigation();
   const route = useRoute();
   
-  const baseUrl = "https://welcome-chamois-aware.ngrok-free.app";
+  const baseUrl = "https://properly-definite-mastodon.ngrok-free.app";
   
   // Obtenemos categoriaId y categoriaNombre desde los parámetros
   const categoriaId = route.params?.categoriaId;
@@ -90,7 +90,7 @@ const EventosScreen = () => {
         )}
       </ScrollView>
       <View style={styles.tabBar}>
-        <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('DetalleEventosScreen')}>
+        <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('EventosScreen')}>
           <Ionicons name="calendar-outline" size={24} color="#4c669f" />
           <Text style={styles.tabText}>Eventos</Text>
         </TouchableOpacity>

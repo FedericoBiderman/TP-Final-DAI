@@ -10,7 +10,7 @@ const DetalleEventosScreen = ({ route, userData }) => {
   const [loading, setLoading] = useState(true);
   const [loadingAction, setLoadingAction] = useState(false);
   const [usuarioInscripto, setUsuarioInscripto] = useState(false);
-  const baseUrl = "https://welcome-chamois-aware.ngrok-free.app";
+  const baseUrl = "https://properly-definite-mastodon.ngrok-free.app";
   const navigation = useNavigation();
   const { eventId } = route.params;
 
@@ -144,25 +144,32 @@ const DetalleEventosScreen = ({ route, userData }) => {
           <View style={styles.attendeesContainer}>
             <Text style={styles.attendeesTitle}>INSCRITOS</Text>
             {event.attended && event.attended.length > 0 ? (
-              <FlatList
-                data={event.attended}
-                keyExtractor={(item) => item.id.toString()}
-                renderItem={({ item }) => (
-                  <View style={styles.attendeeItem}>
-                    <Text style={styles.attendeeName}>
-                      {item.first_name} {item.last_name}
-                    </Text>
-                    <Ionicons
-                      name={item.attended ? "checkmark-circle" : "close-circle"}
-                      size={24}
-                      color={item.attended ? "#4CAF50" : "#F44336"}
-                    />
-                  </View>
-                )}
-              />
-            ) : (
-              <Text style={styles.noAttendeesText}>No hay inscritos en este evento.</Text>
-            )}
+  <FlatList
+    data={event.attended}
+    keyExtractor={(item) => item.id.toString()}
+    renderItem={({ item }) => (
+      <View style={styles.attendeeItem}>
+        <Text style={styles.attendeeName}>
+          {item.first_name} {item.last_name}
+        </Text>
+        <Text style={styles.attendeeObservation}>
+          Opinión: {item.observations || "Sin comentarios."}
+        </Text>
+        <Text style={styles.attendeeRating}>
+          Calificación: {item.rating || "Sin calificación."}
+        </Text>
+        <Ionicons
+          name={item.attended ? "checkmark-circle" : "close-circle"}
+          size={24}
+          color={item.attended ? "#4CAF50" : "#F44336"}
+        />
+      </View>
+    )}
+  />
+) : (
+  <Text style={styles.noAttendeesText}>No hay opiniones registradas para este evento.</Text>
+)}
+
           </View>
         ) : (
           <View style={styles.subscriptionContainer}>

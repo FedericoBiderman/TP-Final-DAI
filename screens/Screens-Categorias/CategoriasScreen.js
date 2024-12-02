@@ -10,7 +10,7 @@ const CategoriasScreen = () => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const navigation = useNavigation();
-  const baseUrl = 'https://welcome-chamois-aware.ngrok-free.app';
+  const baseUrl = 'https://properly-definite-mastodon.ngrok-free.app';
 
   const fetchCategorias = async () => {
     try {
@@ -88,7 +88,7 @@ const CategoriasScreen = () => {
         }
       />
       <View style={styles.footer}>
-      <TouchableOpacity style={styles.footerItem} onPress={() => navigation.navigate('DetalleEventosScreen')}>
+      <TouchableOpacity style={styles.footerItem} onPress={() => navigation.navigate('EventosScreen')}>
           <Ionicons name="calendar-outline" size={24} color="#4c669f" />
           <Text style={styles.tabText}>Eventos</Text>
         </TouchableOpacity>

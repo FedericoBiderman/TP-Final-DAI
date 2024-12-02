@@ -8,7 +8,7 @@ const ProfileScreen = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigation = useNavigation();
-  const baseUrl = "https://welcome-chamois-aware.ngrok-free.app";
+  const baseUrl = "https://properly-definite-mastodon.ngrok-free.app";
 
   useEffect(() => {
     fetchUserProfile();
