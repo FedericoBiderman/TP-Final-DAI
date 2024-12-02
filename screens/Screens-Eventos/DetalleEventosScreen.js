@@ -4,6 +4,8 @@ import { Ionicons } from '@expo/vector-icons';
 import axios from "axios";
 import { useNavigation } from "@react-navigation/native";
 import { useFocusEffect } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 const DetalleEventosScreen = ({ route, userData }) => {
   const [event, setEvent] = useState(null);
@@ -56,17 +58,23 @@ const DetalleEventosScreen = ({ route, userData }) => {
 
   const handleSubscribe = async () => {
     setLoadingAction(true);
+  
     try {
-      await axios.post(`${baseUrl}/api/event/${eventId}/enrollment`, {
-        id_event: eventId,
-        id_user: userData?.usuario?.id,
-        description: '',
-        attended: 0,
-        observations: '',
-        rating: '',
-      }, {
-        headers: { Authorization: `Bearer ${userData?.token}` },
+      // Recupera el token desde AsyncStorage
+      const miToken = await AsyncStorage.getItem('userToken');
+      if (!miToken) {
+        console.error("Error: No se encontró el token en AsyncStorage");
+        showAlert("Error", "No se pudo recuperar el token para la suscripción.");
+        return;
+      }
+      console.log("Token recuperado:", miToken);
+  
+      // Realiza la solicitud POST
+      await axios.post(`${baseUrl}/api/event/${eventId}/enrollment`, null, {
+        headers: { Authorization: `Bearer ${miToken}` },
       });
+  
+      // Actualiza el estado y muestra la alerta de éxito
       setUsuarioInscripto(true);
       showAlert(event.name, 'Suscripción exitosa!');
       fetchEventDetails();
